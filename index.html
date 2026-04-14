@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FUSED Fitness Challenge</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#0C0C14;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Helvetica Neue',Arial,sans-serif;overflow:hidden;position:relative;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.bg1{position:absolute;top:-25%;right:-20%;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(220,53,69,.06) 0%,transparent 70%);pointer-events:none}
+.bg2{position:absolute;bottom:-15%;left:-15%;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,193,7,.04) 0%,transparent 70%);pointer-events:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:.75}}
+@keyframes glow{0%,100%{box-shadow:0 0 18px rgba(220,53,69,.2)}50%{box-shadow:0 0 36px rgba(220,53,69,.45)}}
+@keyframes confetti{0%{transform:translateY(-6px) rotate(0deg);opacity:1}100%{transform:translateY(320px) rotate(540deg);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.screen{display:none;flex-direction:column;align-items:center;text-align:center;animation:fadeUp .5s ease-out;max-width:340px;width:100%;padding:0 20px}
+.screen.active{display:flex}
+.badge{display:inline-block;padding:4px 13px;background:rgba(220,53,69,.1);color:#DC3545;font-size:10px;font-weight:700;letter-spacing:2px;border-radius:20px;text-transform:uppercase;margin-bottom:18px}
+.studio-name{font-size:38px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1}
+.studio-sub{font-size:11px;letter-spacing:6px;color:rgba(255,255,255,.3);font-weight:500;margin-top:3px}
+.divider{width:60px;height:2px;background:linear-gradient(90deg,transparent,#DC3545,transparent);margin:24px auto}
+.hero-emoji{font-size:52px;margin-bottom:10px}
+.hero-text{font-size:21px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:5px}
+.hero-accent{color:#DC3545}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.38);line-height:1.5;margin-bottom:10px}
+.tiers-row{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin-bottom:24px}
+.tier-pill{padding:4px 9px;border-radius:7px;font-size:10px;font-weight:600}
+.btn-main{background:#DC3545;color:#fff;border:none;padding:14px 40px;font-size:14px;font-weight:800;letter-spacing:3px;border-radius:50px;cursor:pointer;text-transform:uppercase;transition:all .15s;font-family:inherit;animation:glow 2s ease-in-out infinite}
+.btn-main:active{transform:scale(.97)}
+.btn-sec{background:transparent;color:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.1);padding:11px 24px;font-size:12px;font-weight:700;letter-spacing:2px;border-radius:50px;cursor:pointer;text-transform:uppercase;font-family:inherit;transition:all .15s}
+.btn-sec:active{border-color:rgba(255,255,255,.25);color:#fff}
+.powered{font-size:9px;color:rgba(255,255,255,.13);letter-spacing:1px;margin-top:18px}
+.fi{width:100%;padding:13px 15px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.07);border-radius:11px;color:#fff;font-size:15px;font-family:inherit;outline:none;transition:border-color .2s}
+.fi:focus{border-color:#DC3545}
+.fi::placeholder{color:rgba(255,255,255,.22)}
+.timer-ring{position:relative;width:110px;height:110px;margin:0 auto 14px}
+.timer-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.timer-big{font-size:34px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.timer-label{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:2px;margin-top:2px}
+.char-area{height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:10px}
+.char-emoji{font-size:64px;line-height:1;transition:transform .07s ease-out}
+.rep-count{font-size:44px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;margin-top:6px}
+.rep-label{font-size:15px;font-weight:700;color:rgba(255,255,255,.3);margin-left:5px;letter-spacing:2px}
+.progress-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.progress-fill{height:100%;border-radius:3px;transition:width .08s}
+.tap-text{font-size:14px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:4px;margin-top:6px}
+.prize-box{border-radius:13px;padding:16px 18px;margin-bottom:6px}
+.countdown{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+.cd-unit{text-align:center}
+.cd-num{background:rgba(220,53,69,.1);border-radius:8px;padding:7px 10px;min-width:42px;font-size:20px;font-weight:800;color:#DC3545;font-variant-numeric:tabular-nums}
+.cd-label{font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.25);margin-top:3px}
+.reward-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:14px 16px;margin-bottom:14px;text-align:left}
+.share-box{border-radius:11px;padding:12px 14px;margin-bottom:14px;cursor:pointer}
+.share-actions{display:flex;gap:7px;margin-top:10px}
+.owner-panel{margin-top:18px;border-top:1px solid rgba(255,255,255,.05);padding-top:14px}
+.owner-badge{display:inline-block;padding:3px 9px;background:rgba(255,255,255,.04);border-radius:5px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.25);margin-bottom:10px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.stat-card{background:rgba(255,255,255,.025);border-radius:9px;padding:9px 11px;text-align:left}
+.stat-label{font-size:9px;color:rgba(255,255,255,.25);letter-spacing:1px;margin-bottom:2px}
+.stat-val{font-size:17px;font-weight:800}
+.confetti-piece{position:absolute;top:0;width:6px;height:6px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="bg1"></div>
+<div class="bg2"></div>
+
+<!-- INTRO -->
+<div class="screen active" id="intro">
+  <div class="badge">EXCLUSIVE CHALLENGE</div>
+  <div class="studio-name">FUSED FITNESS</div>
+  <div class="studio-sub">MEMPHIS</div>
+  <div class="divider"></div>
+  <div class="hero-emoji">🏋️</div>
+  <div class="hero-text">How many reps can you<br>crush in <span class="hero-accent">7 seconds</span>?</div>
+  <div class="hero-sub">Tap fast. Earn your reward. Every player wins.</div>
+  <div class="tiers-row">
+    <span class="tier-pill" style="background:rgba(93,202,165,.12);color:#5DCAA5">📊 0+ reps</span>
+    <span class="tier-pill" style="background:rgba(255,140,66,.12);color:#FF8C42">👥 25+ reps</span>
+    <span class="tier-pill" style="background:rgba(220,53,69,.12);color:#DC3545">🔥 38+ reps</span>
+    <span class="tier-pill" style="background:rgba(255,217,61,.12);color:#FFD93D">👑 50+ reps</span>
+  </div>
+  <button class="btn-main" onclick="showScreen('game')">START CHALLENGE</button>
+  <div class="powered">POWERED BY PLAYJCLAY.COM</div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game" onclick="handleTap()">
+  <div class="timer-ring">
+    <svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg)">
+      <circle cx="55" cy="55" r="48" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+      <circle id="timer-arc" cx="55" cy="55" r="48" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="5" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="0" style="transition:stroke-dashoffset .12s linear,stroke .3s"/>
+    </svg>
+    <div class="timer-num">
+      <div class="timer-big" id="timer-display">7</div>
+      <div class="timer-label">SEC</div>
+    </div>
+  </div>
+  <div class="char-area">
+    <div class="char-emoji" id="character">🏋️</div>
+    <div><span class="rep-count" id="rep-count">0</span><span class="rep-label">REPS</span></div>
+  </div>
+  <div id="progress-section" style="width:100%;display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;padding:0 2px">
+      <span id="tier-label" style="font-size:12px;font-weight:700"></span>
+      <span id="next-tier" style="font-size:11px;color:rgba(255,255,255,.25)"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;padding:0 2px">
+      <span style="font-size:9px;color:rgba(255,255,255,.15);font-weight:600">0</span>
+      <span style="font-size:9px;color:rgba(255,255,255,.15);font-weight:600">25</span>
+      <span style="font-size:9px;color:rgba(255,255,255,.15);font-weight:600">38</span>
+      <span style="font-size:9px;color:rgba(255,255,255,.15);font-weight:600">50</span>
+    </div>
+  </div>
+  <div class="tap-text" id="tap-text" style="display:none"></div>
+</div>
+
+<!-- PRIZE -->
+<div class="screen" id="prize">
+  <div id="confetti-container"></div>
+  <div id="prize-icon" style="font-size:40px;margin-bottom:4px;animation:float 2s ease-in-out infinite"></div>
+  <div id="prize-tier-badge" class="badge" style="margin-bottom:10px"></div>
+  <div id="prize-box" class="prize-box" style="margin-bottom:6px">
+    <p style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:3px;font-weight:500">You earned:</p>
+    <p id="prize-reward" style="font-size:20px;font-weight:800;line-height:1.2;margin-bottom:3px"></p>
+    <p id="prize-subtitle" style="font-size:12px;color:rgba(255,255,255,.35)"></p>
+  </div>
+  <div style="margin-bottom:14px">
+    <p style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.25);margin-bottom:6px;font-weight:600">EXPIRES IN</p>
+    <div class="countdown">
+      <div class="cd-unit"><div class="cd-num" id="cd-days">05</div><div class="cd-label">DAYS</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-hrs">00</div><div class="cd-label">HRS</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-min">00</div><div class="cd-label">MIN</div></div>
+      <div class="cd-unit"><div class="cd-num" id="cd-sec">00</div><div class="cd-label">SEC</div></div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:rgba(255,255,255,.35);line-height:1.5;margin-bottom:14px">Drop your info to lock it in.<br>We'll text you the details + reminders.</p>
+  <div style="display:flex;flex-direction:column;gap:9px;width:100%;margin-bottom:14px">
+    <input class="fi" id="inp-name" placeholder="Your name">
+    <input class="fi" id="inp-phone" placeholder="Phone number" type="tel">
+  </div>
+  <button class="btn-main" id="claim-btn" style="width:100%;opacity:.3;cursor:default;animation:none" onclick="handleClaim()">LOCK IN MY REWARD</button>
+  <p style="font-size:9px;color:rgba(255,255,255,.13);margin-top:10px">You'll receive 3 friendly texts over 5 days. Unsubscribe anytime.</p>
+</div>
+
+<!-- CLAIMED -->
+<div class="screen" id="claimed">
+  <div style="width:58px;height:58px;border-radius:50%;background:rgba(93,202,165,.12);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:26px;color:#5DCAA5">✓</div>
+  <h2 id="claim-name" style="font-size:22px;font-weight:800;color:#fff;margin-bottom:3px"></h2>
+  <p style="font-size:13px;color:rgba(255,255,255,.38);line-height:1.5;margin-bottom:16px">Check your phone — reward details incoming.</p>
+  <div class="reward-card" id="reward-card"></div>
+
+  <div id="share-prompt" class="share-box" style="background:rgba(255,140,66,.06);border:1.5px dashed rgba(255,140,66,.25)" onclick="showShareActions()">
+    <p style="font-size:13px;font-weight:700;color:#FF8C42;margin-bottom:2px">🔓 Want a bonus reward?</p>
+    <p style="font-size:11px;color:rgba(255,255,255,.35)">Share with a friend — you BOTH get an upgrade</p>
+  </div>
+  <div id="share-actions" style="display:none" class="share-box" style="background:rgba(255,140,66,.05);border:1.5px solid rgba(255,140,66,.18)">
+    <p style="font-size:12px;font-weight:600;color:#FF8C42;margin-bottom:10px">Send the challenge to a friend:</p>
+    <div class="share-actions">
+      <button class="btn-sec" style="flex:1;padding:9px;font-size:11px" onclick="unlockBonus()">📱 Text</button>
+      <button class="btn-sec" style="flex:1;padding:9px;font-size:11px" onclick="unlockBonus()">📸 Story</button>
+      <button class="btn-sec" style="flex:1;padding:9px;font-size:11px" onclick="unlockBonus()">📋 Copy</button>
+    </div>
+  </div>
+  <div id="bonus-unlocked" style="display:none;background:rgba(93,202,165,.06);border:1.5px solid rgba(93,202,165,.18);border-radius:11px;padding:12px 14px;margin-bottom:14px;animation:fadeUp .4s ease">
+    <p style="font-size:13px;font-weight:700;color:#5DCAA5;margin-bottom:2px">🎉 Bonus unlocked!</p>
+    <p style="font-size:11px;color:rgba(255,255,255,.35)">Free smoothie on your first visit — details in your next text</p>
+  </div>
+
+  <p style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">📍 FUSED FITNESS</p>
+  <p style="font-size:11px;color:rgba(255,255,255,.25);margin-bottom:16px">410 N Cleveland St • Memphis, TN 38104</p>
+
+  <!-- OWNER VIEW -->
+  <div class="owner-panel">
+    <div class="owner-badge">OWNER VIEW — DEMO ONLY</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Prize cost</div><div class="stat-val" id="ov-cost" style="color:#5DCAA5"></div></div>
+      <div class="stat-card"><div class="stat-label">Avg member value/yr</div><div class="stat-val" style="color:#FFD93D">$1,440</div></div>
+      <div class="stat-card"><div class="stat-label">Reward window</div><div class="stat-val" style="color:#FF8C42">5 days</div></div>
+      <div class="stat-card"><div class="stat-label">Text reminders</div><div class="stat-val" style="color:#5DCAA5">3 auto</div></div>
+    </div>
+    <div style="background:rgba(255,255,255,.025);border-radius:9px;padding:11px 13px;font-size:11px;color:rgba(255,255,255,.4);line-height:1.6;text-align:left;margin-bottom:10px">
+      <span style="font-weight:700;color:rgba(255,255,255,.65)">Why this prize works: </span><span id="ov-why"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div style="background:rgba(93,202,165,.04);border-radius:7px;padding:7px 9px;font-size:10px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px">🔒 One play per device</div>
+      <div style="background:rgba(93,202,165,.04);border-radius:7px;padding:7px 9px;font-size:10px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px">⏰ 5-day expiration</div>
+      <div style="background:rgba(93,202,165,.04);border-radius:7px;padding:7px 9px;font-size:10px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px">🎛️ Owner controls campaign</div>
+      <div style="background:rgba(93,202,165,.04);border-radius:7px;padding:7px 9px;font-size:10px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px">📱 Auto text follow-up</div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)">
+    <p style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.13);margin-bottom:10px">AD CREATED BY <span style="color:#DC3545;font-weight:700">PLAYJCLAY.COM</span></p>
+    <button class="btn-sec" style="font-size:11px;padding:8px 20px" onclick="resetDemo()">↻ REPLAY DEMO</button>
+  </div>
+</div>
+
+<script>
+const TIERS=[
+  {min:0,max:24,tier:"WARM UP",reward:"Free Fitness Assessment",sub:"A $75 value — discover your starting point",cost:"$0",why:"This IS the sales consultation. Once they see their numbers, they want to improve. Highest-converting lead tool in fitness.",icon:"📊",color:"#5DCAA5"},
+  {min:25,max:37,tier:"SOLID",reward:"Free Class + Buddy Pass",sub:"Bring a friend — both of you, on us",cost:"$0",why:"Class runs anyway — marginal cost is zero. Buddy pass doubles foot traffic. Two leads from one ad play.",icon:"👥",color:"#FF8C42"},
+  {min:38,max:49,tier:"BEAST MODE",reward:"3-Day VIP Pass",sub:"Full access for 3 days — no limits",cost:"$0",why:"Three visits creates a habit. By day 3 they know the coaches and the vibe. 5x more likely to convert than a 1-class visitor.",icon:"🔥",color:"#DC3545"},
+  {min:50,max:999,tier:"ELITE",reward:"Free Week + Welcome Kit",sub:"7 days full access + branded gear",cost:"~$5",why:"A towel and bottle costs $5. A member who converts at $120/mo pays $1,440 in year one. That's a 288x return.",icon:"👑",color:"#FFD93D"}
+];
+const DUR=7;
+let phase="ready",reps=0,startTime=0,timerIv=null,bounced=false,wonPrize=null,endTime=0;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function getTier(r){
+  for(let i=TIERS.length-1;i>=0;i--){if(r>=TIERS[i].min)return TIERS[i]}
+  return TIERS[0];
+}
+function getNextTier(r){return TIERS.find(t=>t.min>r)}
+
+function handleTap(){
+  if(phase==="ready"){startGame();return}
+  if(phase!=="playing")return;
+  reps++;
+  document.getElementById('rep-count').textContent=reps;
+  const ch=document.getElementById('character');
+  ch.style.transform=bounced?"translateY(0) scaleY(1)":"translateY(-16px) scaleY(.82)";
+  bounced=!bounced;
+  const t=getTier(reps),nt=getNextTier(reps);
+  document.getElementById('tier-label').innerHTML=t.icon+" "+t.tier;
+  document.getElementById('tier-label').style.color=t.color;
+  document.getElementById('next-tier').textContent=nt?(nt.min-reps)+" more → "+nt.tier:"";
+  const pct=Math.min(reps/55,1)*100;
+  const fill=document.getElementById('progress-fill');
+  fill.style.width=pct+"%";
+  fill.style.background="linear-gradient(90deg,#5DCAA5,"+t.color+")";
+}
+
+function startGame(){
+  phase="playing";reps=0;startTime=Date.now();
+  document.getElementById('rep-count').textContent="0";
+  document.getElementById('progress-section').style.display='block';
+  document.getElementById('tap-text').style.display='block';
+  document.getElementById('timer-display').textContent=DUR;
+  const arc=document.getElementById('timer-arc');
+  arc.setAttribute('stroke','#5DCAA5');
+  timerIv=setInterval(()=>{
+    const el=(Date.now()-startTime)/1000;
+    const rem=Math.max(0,DUR-el);
+    document.getElementById('timer-display').textContent=Math.ceil(rem);
+    const off=301.6*(1-rem/DUR);
+    arc.setAttribute('stroke-dashoffset',off);
+    if(rem<=2){arc.setAttribute('stroke','#DC3545');document.getElementById('timer-display').style.color='#DC3545';document.getElementById('tap-text').textContent='FINISH STRONG!'}
+    else{document.getElementById('timer-display').style.color='#fff';document.getElementById('tap-text').textContent='TAP TAP TAP'}
+    if(rem<=0){clearInterval(timerIv);phase="done";const t=getTier(reps);document.getElementById('tap-text').textContent=reps+" REPS — "+t.tier+"!";document.getElementById('tap-text').style.color=t.color;setTimeout(()=>showPrize(),700)}
+  },50);
+}
+
+function showPrize(){
+  wonPrize=getTier(reps);
+  endTime=Date.now()+5*24*60*60*1000;
+  document.getElementById('prize-icon').textContent=wonPrize.icon;
+  const tb=document.getElementById('prize-tier-badge');
+  tb.textContent=reps+" REPS — "+wonPrize.tier;
+  tb.style.background=wonPrize.color+"18";tb.style.color=wonPrize.color;
+  const pb=document.getElementById('prize-box');
+  pb.style.background=wonPrize.color+"0D";pb.style.border="1.5px solid "+wonPrize.color+"25";
+  document.getElementById('prize-reward').textContent=wonPrize.reward;
+  document.getElementById('prize-reward').style.color=wonPrize.color;
+  document.getElementById('prize-subtitle').textContent=wonPrize.sub;
+  // confetti
+  const cc=document.getElementById('confetti-container');cc.innerHTML='';
+  const cols=['#DC3545','#FF8C42','#FFD93D','#5DCAA5','#fff'];
+  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='confetti-piece';d.style.left=(10+Math.random()*80)+'%';d.style.background=cols[i%5];d.style.borderRadius=i%3===0?'50%':'1px';d.style.animation='confetti '+(2+Math.random()*1.5)+'s ease-in '+(Math.random()*.4)+'s forwards';cc.appendChild(d)}
+  startCountdown();
+  showScreen('prize');
+  // form validation
+  const nb=document.getElementById('claim-btn');
+  const check=()=>{const n=document.getElementById('inp-name').value,p=document.getElementById('inp-phone').value;if(n&&p){nb.style.opacity='1';nb.style.cursor='pointer';nb.style.animation='glow 2s ease-in-out infinite'}else{nb.style.opacity='.3';nb.style.cursor='default';nb.style.animation='none'}};
+  document.getElementById('inp-name').oninput=check;
+  document.getElementById('inp-phone').oninput=check;
+}
+
+function startCountdown(){
+  const update=()=>{
+    const diff=Math.max(0,endTime-Date.now());
+    const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4),s=Math.floor(diff%6e4/1e3);
+    document.getElementById('cd-days').textContent=String(d).padStart(2,'0');
+    document.getElementById('cd-hrs').textContent=String(h).padStart(2,'0');
+    document.getElementById('cd-min').textContent=String(m).padStart(2,'0');
+    document.getElementById('cd-sec').textContent=String(s).padStart(2,'0');
+  };
+  update();setInterval(update,1000);
+}
+
+function handleClaim(){
+  const n=document.getElementById('inp-name').value,p=document.getElementById('inp-phone').value;
+  if(!n||!p)return;
+  document.getElementById('claim-name').textContent="Locked in, "+n.split(' ')[0]+"!";
+  const rc=document.getElementById('reward-card');
+  rc.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.22)">YOUR REWARD</span><span style="font-size:9px;font-weight:600;color:'+wonPrize.color+';letter-spacing:1px">'+reps+' REPS — '+wonPrize.tier+'</span></div><p style="font-size:16px;font-weight:700;color:'+wonPrize.color+';margin-bottom:2px">'+wonPrize.reward+'</p><p style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:10px">'+wonPrize.sub+'</p><div style="border-top:1px solid rgba(255,255,255,.05);padding-top:8px;display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.25)">Valid for 5 days</span><span style="font-size:10px;color:rgba(255,255,255,.25)">We\'ll remind you</span></div>';
+  document.getElementById('ov-cost').textContent=wonPrize.cost;
+  document.getElementById('ov-why').textContent=wonPrize.why;
+  showScreen('claimed');
+}
+
+function showShareActions(){
+  document.getElementById('share-prompt').style.display='none';
+  document.getElementById('share-actions').style.display='block';
+}
+function unlockBonus(){
+  document.getElementById('share-actions').style.display='none';
+  document.getElementById('bonus-unlocked').style.display='block';
+}
+
+function resetDemo(){
+  phase="ready";reps=0;bounced=false;wonPrize=null;
+  document.getElementById('rep-count').textContent='0';
+  document.getElementById('progress-section').style.display='none';
+  document.getElementById('tap-text').style.display='none';
+  document.getElementById('tap-text').style.color='rgba(255,255,255,.2)';
+  document.getElementById('timer-display').style.color='#fff';
+  document.getElementById('timer-display').textContent='7';
+  document.getElementById('timer-arc').setAttribute('stroke-dashoffset','0');
+  document.getElementById('timer-arc').setAttribute('stroke','rgba(255,255,255,.12)');
+  document.getElementById('character').style.transform='translateY(0) scaleY(1)';
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-phone').value='';
+  document.getElementById('share-prompt').style.display='block';
+  document.getElementById('share-actions').style.display='none';
+  document.getElementById('bonus-unlocked').style.display='none';
+  showScreen('intro');
+}
+</script>
+</body>
+</html>
